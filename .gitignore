@@ -1,0 +1,38 @@
+# compiled output
+/chat-service/dist
+/chat-service/node_modules
+
+# env file
+/chat-service/.env
+
+# Logs
+/chat-service/logs
+/chat-service/*.log
+/chat-service/npm-debug.log*
+/chat-service/pnpm-debug.log*
+/chat-service/yarn-debug.log*
+/chat-service/yarn-error.log*
+/chat-service/lerna-debug.log*
+
+# OS
+/chat-service/.DS_Store
+
+# Tests
+/chat-service/coverage
+/chat-service/.nyc_output
+
+# IDEs and editors
+/chat-service/.idea
+/chat-service/.project
+/chat-service/.classpath
+/chat-service/.c9/
+/chat-service/*.launch
+/chat-service/.settings/
+/chat-service/*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
