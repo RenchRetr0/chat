@@ -1,3 +1,4 @@
+import { EmailIsStatus } from "@email-is-status/entities/email-is-status.entity";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModuleAsyncOptions, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { Profile } from "@profile/entities/profile.entity";
@@ -16,7 +17,7 @@ export const typeOrmAsyncConfig: TypeOrmModuleAsyncOptions = {
             username: configService.get<string>('APP_DB_USERNAME'),
             database: configService.get<string>('APP_DB_NAME'),
             password: configService.get<string>('APP_DB_PASSWORD'),
-            entities: [User, Profile],
+            entities: [User, Profile, EmailIsStatus],
             autoLoadEntities: true,
             synchronize: true,
             logging: false,

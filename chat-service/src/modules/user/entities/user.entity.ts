@@ -19,6 +19,7 @@ import {
 } from 'typeorm';
 import { UserProperties } from '../interfaces/user.interface';
 import { Profile } from '@profile/entities/profile.entity';
+import { EmailIsStatus } from '@email-is-status/entities/email-is-status.entity';
 
 @Entity('users')
 export class User extends BaseEntity implements UserProperties {
@@ -57,6 +58,10 @@ export class User extends BaseEntity implements UserProperties {
   @OneToOne(() => Profile)
   @JoinColumn()
   profile: Profile;
+
+  @Type(() => EmailIsStatus)
+  @OneToOne(() => EmailIsStatus, (emailIsStatus) => emailIsStatus.user)
+  emailIsStatus: EmailIsStatus;
 
   @IsDate()
   @CreateDateColumn()

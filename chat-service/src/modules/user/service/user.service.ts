@@ -1,3 +1,4 @@
+import { EmailIsStatusService } from '@email-is-status/service/email-is-status.service';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProfileService } from '@profile/service/profile.service';
@@ -12,7 +13,8 @@ export class UserService
 {
     constructor (
         @InjectRepository(User) private userRepository: Repository<User>,
-        private profileService: ProfileService
+        private profileService: ProfileService,
+        private emailIsStatusService: EmailIsStatusService
     ) {}
 
     async createUser(createUserDto: CreateUserDto): Promise<User>
@@ -40,7 +42,11 @@ export class UserService
             profile: profile
         });
 
-        return await this.userRepository.save(user);
+        const userCreate: User = await this.userRepository.save(user);
+
+        await this.emailIsStatusService.createEmailIsStatus(userCreate);
+
+        return userCreate;
     }
 
     async findOne(userFilterQuery: FindOptionsWhere<User>): Promise<User> {
