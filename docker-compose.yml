@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  chat-service:
+    container_name: service
+    build: 
+      dockerfile: Dockerfile
+      context: ./chat-service
+      # Only build development stage from Dockerfile
+      target: development
+
+    restart: always
+
+    env_file:
+      - ./.env
+
+    # Mount our host dir to the docker container
+    # Mount api directory (./chat-service) to (:) docker container (/chat-service/src/app)
+    # Reflect File changes from host to container
+    volumes:
+      - ./app:/chat-service/
+      - ./app:/chat-service/node_modules/
+
+    # RUN in debug mode: npm run start:debug --> Also start your vscode debugger
+    # Run in dev mode: npm run start:dev
+    command: npm run start:dev
+    environment:
+      NODE_ENV: development
+      PORT: 5000
+    ports:
+      - 5000:5000
+      - 9229:9229

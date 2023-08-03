@@ -1,5 +1,6 @@
 import { EmailIsStatus } from '@email-is-status/entities/email-is-status.entity';
 import { Injectable } from '@nestjs/common';
+import { MailerService } from '@nestjs-modules/mailer';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@user/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -9,6 +10,7 @@ export class EmailIsStatusService
 {
     constructor (
         @InjectRepository(EmailIsStatus) private emailIsStatusRepository: Repository<EmailIsStatus>,
+        private readonly mailerService: MailerService
     ) {}
 
     async createEmailIsStatus(user: User): Promise<EmailIsStatus>
@@ -18,5 +20,19 @@ export class EmailIsStatusService
         });
 
         return await this.emailIsStatusRepository.save(emailIsStatus);
+    }
+
+    async mailer(email: string)
+    {
+        const emailSend = await this.mailerService.sendMail({
+            to: email,
+            from: 'retro.rench00@gmail.com',
+            subject: 'Тестовое письмо.',
+            text: 'П#ШЁЛ НАХУЙ!'
+        });
+
+        console.log(emailSend);
+
+        return emailSend;
     }
 }

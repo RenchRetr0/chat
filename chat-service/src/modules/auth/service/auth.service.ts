@@ -1,0 +1,76 @@
+import { Tokens } from '@auth/types';
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { compare } from 'bcrypt';
+import appConfig from '@config/app.config';
+import { UserService } from '@user/service/user.service';
+import { SignInDto } from '@auth/dto/Signin.dto';
+import { UsersUnauthorized } from '@user/errors/user-unauthorizad.error';
+import { UsersNotFound } from '@user/errors/user-not-found.error';
+import { JwtPayloadDto } from '@auth/dto/JwtPayload.dto';
+
+@Injectable()
+export class AuthService 
+{
+    constructor(
+        private jwtService: JwtService,
+        private userService: UserService,
+    ) {}
+
+    async signin(signinDto: SignInDto): Promise<Tokens>
+    {
+        const user = await this.userService.findOne({login: signinDto.login});
+
+        if (!user) throw new UsersNotFound();
+
+        const isCorrectPassword = await compare(
+            signinDto.password,
+            user.password,
+        );
+
+        if (!isCorrectPassword) {
+            throw new UsersUnauthorized();
+        }
+
+        return await this.generateToken(user.id, user.login);
+    }
+
+    async refreshTokens(jwtPayloadDto: JwtPayloadDto): Promise<Tokens>
+    {
+        const user = await this.userService.findOne({id: jwtPayloadDto.sub});
+
+        if (!user) throw new UsersNotFound();
+
+        return await this.generateToken(user.id, user.login);
+    }
+
+    async generateToken(userId: number, login: string): Promise<Tokens>
+    {
+        const accessToken = await this.jwtService.signAsync(
+            {
+                sub: userId,
+                login: login
+            },
+            {
+                secret: appConfig().appSecret,
+                expiresIn: 60 * 15,
+            }
+        );
+
+        const refreshToken = await this.jwtService.signAsync(
+            {
+                sub: userId,
+                login: login
+            },
+            {
+                secret: appConfig().appSecret,
+                expiresIn: 60 * 60 * 24 * 7,
+            }
+        );
+
+        return {
+            access_token: accessToken,
+            refresh_token: refreshToken
+        };
+    }
+}

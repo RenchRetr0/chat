@@ -19,9 +19,11 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@common/*": ["src/common/*"],
+      "@config/*": ["src/config/*"],
       "@user/*": ["src/modules/user/*"],
       "@profile/*": ["src/modules/profile/*"],
       "@email-is-status/*": ["src/modules/email-is-status/*"],
+      "@auth/*": ["src/modules/auth/*"],
     }
   }
 }
