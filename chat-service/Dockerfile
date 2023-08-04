@@ -9,11 +9,10 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install deps inside container
-RUN npm install --force
+RUN npm install --legacy-peer-deps
 
+COPY . .
 RUN npm run build
-
-EXPOSE 5000
 
 ################
 ## PRODUCTION ##
@@ -25,11 +24,11 @@ ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
 # Set work dir
-WORKDIR /chat-service/src/app
+WORKDIR /chat-service
 
-COPY --from=development /chat-service/src/app .
+COPY --from=development /app .
 
-EXPOSE 8080
+EXPOSE 5000
 
 # run app
 CMD [ "npm", "run", "start:dev"]
