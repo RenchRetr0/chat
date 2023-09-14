@@ -8,6 +8,7 @@ import { EmailIsStatusModule } from '@email-is-status/email-is-status.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { mailerAsyncConfig } from './config/mailer.config';
 import { AuthModule } from './modules/auth/auth.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AuthModule } from './modules/auth/auth.module';
     EmailIsStatusModule,
     MailerModule,
     AuthModule,
+    ChatModule,
   ],
   controllers: [],
   providers: [],

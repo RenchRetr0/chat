@@ -8,7 +8,6 @@ export const jwtConfig: JwtModuleAsyncOptions =
     useFactory: async (configService: ConfigService): Promise<JwtModuleOptions> => {
         return {
             secret: configService.get<string>('APP_SECRET_TOKEN'),
-            signOptions: { expiresIn: '1d'},
         };
     },
 };

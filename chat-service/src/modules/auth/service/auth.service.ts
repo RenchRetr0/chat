@@ -1,8 +1,7 @@
-import { Tokens } from '@auth/types';
+import { Token, Tokens } from '@auth/types';
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
-import appConfig from '@config/app.config';
 import { UserService } from '@user/service/user.service';
 import { SignInDto } from '@auth/dto/Signin.dto';
 import { UsersUnauthorized } from '@user/errors/user-unauthorizad.error';
@@ -19,14 +18,11 @@ export class AuthService
 
     async signin(signinDto: SignInDto): Promise<Tokens>
     {
-        const user = await this.userService.findOne({login: signinDto.login});
+        const user = await this.userService.findOne({login: signinDto.login}, {id: true, login: true, password: true});
 
         if (!user) throw new UsersNotFound();
 
-        const isCorrectPassword = await compare(
-            signinDto.password,
-            user.password,
-        );
+        const isCorrectPassword = await this.validatePassword(signinDto.password, user.password);
 
         if (!isCorrectPassword) {
             throw new UsersUnauthorized();
@@ -52,7 +48,6 @@ export class AuthService
                 login: login
             },
             {
-                secret: appConfig().appSecret,
                 expiresIn: 60 * 15,
             }
         );
@@ -63,7 +58,6 @@ export class AuthService
                 login: login
             },
             {
-                secret: appConfig().appSecret,
                 expiresIn: 60 * 60 * 24 * 7,
             }
         );
@@ -72,5 +66,14 @@ export class AuthService
             access_token: accessToken,
             refresh_token: refreshToken
         };
+    }
+
+    async verifyJwt(jwt: string): Promise<Token> {
+        return this.jwtService.verifyAsync(jwt);
+    }
+
+    private async validatePassword(password: string, storedPasswordHash: string): Promise<boolean>
+    {
+        return await compare( password, storedPasswordHash );
     }
 }
