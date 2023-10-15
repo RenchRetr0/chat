@@ -6,6 +6,7 @@ import { CreateUserDto } from '@user/dto/create-user.dto';
 import { User } from '@user/entities/user.entity';
 import { UserWithCurrentEmailAlreadyExists } from '@user/errors/user-with-current-email-exists.error';
 import { UserWithCurrentLoginAlreadyExists } from '@user/errors/user-with-current-login-exists.error';
+import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
 import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
 
 @Injectable()
@@ -49,10 +50,16 @@ export class UserService
         return userCreate;
     }
 
-    async findOne(userFilterQuery: FindOptionsWhere<User>, userOptionSelect?: FindOptionsSelect<User>): Promise<User> {
+    async findOne(userFilterQuery: FindOptionsWhere<User>, userOptionSelect?: FindOptionsSelect<User>): Promise<User>
+    {
         return await this.userRepository.findOne({
           where: userFilterQuery,
           select: userOptionSelect
         });
+    }
+
+    async findAll(options: IPaginationOptions): Promise<Pagination<User>>
+    {
+        return paginate<User>(this.userRepository, options);
     }
 }
