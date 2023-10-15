@@ -2,13 +2,13 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmAsyncConfig } from './config/typeorm.config';
-import { UserModule } from './modules/user/user.module';
-import { ProfileModule } from './modules/profile/profile.module';
+import { UserModule } from '@user/user.module';
+import { ProfileModule } from '@profile/profile.module';
 import { EmailIsStatusModule } from '@email-is-status/email-is-status.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { mailerAsyncConfig } from './config/mailer.config';
-import { AuthModule } from './modules/auth/auth.module';
-import { ChatModule } from './modules/chat/chat.module';
+import { AuthModule } from '@auth/auth.module';
+import { ChatModule } from '@chat/chat.module';
 
 @Module({
   imports: [

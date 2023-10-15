@@ -24,6 +24,7 @@
       "@profile/*": ["src/modules/profile/*"],
       "@email-is-status/*": ["src/modules/email-is-status/*"],
       "@auth/*": ["src/modules/auth/*"],
+      "@chat/*": ["src/modules/chat/*"]
     }
   }
 }

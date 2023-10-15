@@ -13,6 +13,7 @@ import {
     CreateDateColumn,
     Entity,
     JoinColumn,
+    ManyToMany,
     OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
@@ -20,6 +21,7 @@ import {
 import { UserProperties } from '../interfaces/user.interface';
 import { Profile } from '@profile/entities/profile.entity';
 import { EmailIsStatus } from '@email-is-status/entities/email-is-status.entity';
+import { Room } from '@chat/entities/room.entity';
 
 @Entity('users')
 export class User extends BaseEntity implements UserProperties {
@@ -59,6 +61,9 @@ export class User extends BaseEntity implements UserProperties {
   @OneToOne(() => Profile)
   @JoinColumn()
   profile: Profile;
+
+  @ManyToMany(() => Room, room => room.users)
+  rooms: Room[];
 
   @Type(() => EmailIsStatus)
   @OneToOne(() => EmailIsStatus, (emailIsStatus) => emailIsStatus.user)

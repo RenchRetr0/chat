@@ -10,6 +10,8 @@ import { Socket, Server } from 'socket.io';
 import { AuthService } from '@auth/service/auth.service';
 import { UserService } from '@user/service/user.service';
 import { User } from '@user/entities/user.entity';
+import { RoomService } from '@chat/service/room.service';
+import { Room } from '@chat/entities/room.entity';
 
 @WebSocketGateway({
   cors: {
@@ -22,16 +24,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server;
 
-  title: string[] = [];
-
   constructor (
     private authService: AuthService,
-    private userService: UserService
+    private userService: UserService,
+    private roomService: RoomService
   ) {}
 
   async handleConnection(socket: Socket) {
     try {
-      const decodedToken = await this.authService.verifyJwt(socket.handshake.auth.token);
+      const decodedToken = await this.authService.verifyJwt(socket.handshake.headers.authorization);
       const user: User = await this.userService.findOne({id: decodedToken.sub});
 
       if ( !user )
@@ -40,8 +41,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       else
       {
-        this.title.push('Value' + Math.random().toString());
-        this.server.emit('message', this.title);
+        socket.data.user = user;
+        const rooms = await this.roomService.getRoomsForUser(user.id, {page: 1, limit: 10});
+
+        // Only emit rooms to the specific connected client
+        return this.server.to(socket.id).emit('rooms', rooms);
       }
 
     } catch {
@@ -58,5 +62,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   {
     socket.emit('Error', new UnauthorizedException());
     socket.disconnect();
+  }
+
+  @SubscribeMessage('createRoom')
+  async onCreateRoom(socket: Socket, room: Room): Promise<Room>
+  {
+    return this.roomService.createRoom(room, socket.data.user);
   }
 }
