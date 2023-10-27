@@ -26,4 +26,12 @@ export class ConnectedUserService
     {
         return this.connectedUserRepository.delete({socketId});
     }
+
+    async deleteAll(): Promise<void>
+    {
+        await this.connectedUserRepository
+        .createQueryBuilder()
+        .delete()
+        .execute();
+    }
 }
