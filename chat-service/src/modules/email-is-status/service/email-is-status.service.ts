@@ -28,7 +28,7 @@ export class EmailIsStatusService
             to: email,
             from: 'retro.rench00@gmail.com',
             subject: 'Тестовое письмо.',
-            text: 'П#ШЁЛ НАХУЙ!'
+            text: 'Hello World!'
         });
 
         console.log(emailSend);
