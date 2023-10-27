@@ -1,3 +1,4 @@
+import { ConnectedUser } from "@chat/entities/connected-user.entity";
 import { Room } from "@chat/entities/room.entity";
 import { EmailIsStatus } from "@email-is-status/entities/email-is-status.entity";
 import { ConfigModule, ConfigService } from "@nestjs/config";
@@ -18,7 +19,7 @@ export const typeOrmAsyncConfig: TypeOrmModuleAsyncOptions = {
             username: configService.get<string>('APP_DB_USERNAME'),
             database: configService.get<string>('APP_DB_NAME'),
             password: configService.get<string>('APP_DB_PASSWORD'),
-            entities: [User, Profile, EmailIsStatus, Room],
+            entities: [User, Profile, EmailIsStatus, Room, ConnectedUser],
             autoLoadEntities: true,
             synchronize: true,
             logging: false,

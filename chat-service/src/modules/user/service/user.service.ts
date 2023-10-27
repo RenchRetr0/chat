@@ -7,7 +7,7 @@ import { User } from '@user/entities/user.entity';
 import { UserWithCurrentEmailAlreadyExists } from '@user/errors/user-with-current-email-exists.error';
 import { UserWithCurrentLoginAlreadyExists } from '@user/errors/user-with-current-login-exists.error';
 import { IPaginationOptions, Pagination, paginate } from 'nestjs-typeorm-paginate';
-import { FindOptionsSelect, FindOptionsWhere, Repository } from 'typeorm';
+import { FindOptionsSelect, FindOptionsWhere, Like, Repository } from 'typeorm';
 
 @Injectable()
 export class UserService 
@@ -61,5 +61,14 @@ export class UserService
     async findAll(options: IPaginationOptions): Promise<Pagination<User>>
     {
         return paginate<User>(this.userRepository, options);
+    }
+
+    async findAllByLogin(login: string): Promise<User[]>
+    {
+        return await this.userRepository.find({
+            where: {
+                login: Like(`%${login}%`)
+            }
+        });
     }
 }
