@@ -13,11 +13,17 @@ import {
 } from "typeorm";
 import { JoinedRoom } from "./joined-room.entity";
 import { Message } from "./message.entity";
+import { ApiProperty } from "@nestjs/swagger";
 
 @Entity()
 export class Room extends BaseEntity implements RoomProperties
 {
     @PrimaryGeneratedColumn()
+    @ApiProperty(
+        {
+            required: true
+        }
+    )
     id: number;
 
     @Column({

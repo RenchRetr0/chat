@@ -26,12 +26,17 @@ import { Room } from '@chat/entities/room.entity';
 import { ConnectedUser } from '@chat/entities/connected-user.entity';
 import { JoinedRoom } from '@chat/entities/joined-room.entity';
 import { Message } from '@chat/entities/message.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity('users')
 export class User extends BaseEntity implements UserProperties {
 
   @IsNotEmpty()
   @PrimaryGeneratedColumn()
+  @ApiProperty({
+    type: Number,
+    required: true
+  })
   id: number;
 
   @IsNotEmpty()
@@ -41,6 +46,10 @@ export class User extends BaseEntity implements UserProperties {
     unique: true,
     length: 256,
   })
+  @ApiProperty({
+    type: String,
+    required: true
+  })
   email!: string;
 
   @IsNotEmpty()
@@ -48,6 +57,10 @@ export class User extends BaseEntity implements UserProperties {
     type: 'varchar',
     unique: true,
     length: 256,
+  })
+  @ApiProperty({
+    type: String,
+    required: true
   })
   login!: string;
 
@@ -59,14 +72,26 @@ export class User extends BaseEntity implements UserProperties {
     length: 120,
     select: false
   })
+  @ApiProperty({
+    type: String,
+    required: true
+  })
   password!: string;
 
   @OneToMany(() => ConnectedUser, connection => connection.user)
+  @ApiProperty({
+    type: [ConnectedUser],
+    required: false
+  })
   connections: ConnectedUser[];
 
   @Type(() => Profile)
   @OneToOne(() => Profile)
   @JoinColumn()
+  @ApiProperty({
+    type: Profile,
+    required: false
+  })
   profile: Profile;
 
   @ManyToMany(() => Room, room => room.users)

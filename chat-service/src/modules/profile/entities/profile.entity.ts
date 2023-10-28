@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { ProfielProperties } from "@profile/interfaces/profile.interface";
 import { User } from "@user/entities/user.entity";
 import { Type } from "class-transformer";
@@ -9,6 +10,10 @@ export class Profile extends BaseEntity implements ProfielProperties
 {
     @IsNotEmpty()
     @PrimaryGeneratedColumn()
+    @ApiProperty({
+      type: Number,
+      required: true
+    })
     id: number;
 
     @IsNotEmpty()
@@ -17,6 +22,10 @@ export class Profile extends BaseEntity implements ProfielProperties
         type: 'varchar',
         length: 120,
     })
+    @ApiProperty({
+      type: String,
+      required: true
+    })
     firstname: string;
 
     @IsNotEmpty()
@@ -24,6 +33,10 @@ export class Profile extends BaseEntity implements ProfielProperties
     @Column({
         type: 'varchar',
         length: 120,
+    })
+    @ApiProperty({
+      type: String,
+      required: true
     })
     lastname: string;
 

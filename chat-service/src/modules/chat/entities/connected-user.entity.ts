@@ -1,4 +1,5 @@
 import { ConnectedUserProperties } from "@chat/interfaces/connected-user.interface";
+import { ApiProperty } from "@nestjs/swagger";
 import { User } from "@user/entities/user.entity";
 import {
     BaseEntity,
@@ -13,16 +14,28 @@ import {
 export class ConnectedUser extends BaseEntity implements ConnectedUserProperties
 {
     @PrimaryGeneratedColumn()
+    @ApiProperty({
+        type: Number,
+        required: true
+    })
     id: number;
 
     @Column({
         type: 'varchar',
         length: 255
     })
+    @ApiProperty({
+        type: Number,
+        required: true
+    })
     socketId!: string;
 
     @ManyToOne(() => User)
     @JoinColumn()
+    @ApiProperty({
+        type: User,
+        required: true
+    })
     user: User;
 
 }
