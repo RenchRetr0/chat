@@ -7,9 +7,12 @@ import {
     Entity,
     JoinTable,
     ManyToMany,
+    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
+import { JoinedRoom } from "./joined-room.entity";
+import { Message } from "./message.entity";
 
 @Entity()
 export class Room extends BaseEntity implements RoomProperties
@@ -33,6 +36,12 @@ export class Room extends BaseEntity implements RoomProperties
     @ManyToMany(() => User)
     @JoinTable()
     users: User[];
+
+    @OneToMany(() => JoinedRoom, joinedRoom => joinedRoom.room)
+    joinedUsers: JoinedRoom[];
+
+    @OneToMany(() => Message, message => message.room)
+    messages: Message[];
 
     @CreateDateColumn()
     createdAt?: Date;

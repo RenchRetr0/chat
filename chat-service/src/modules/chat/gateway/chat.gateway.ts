@@ -15,6 +15,10 @@ import { Room } from '@chat/entities/room.entity';
 import { PageProperties } from '@chat/interfaces/page.interface';
 import { ConnectedUserService } from '@chat/service/connected-user.service';
 import { ConnectedUser } from '@chat/entities/connected-user.entity';
+import { JoinedRoomService } from '@chat/service/joined-room.service';
+import { MessageService } from '@chat/service/message.service';
+import { Message } from '@chat/entities/message.entity';
+import { JoinedRoom } from '@chat/entities/joined-room.entity';
 
 @WebSocketGateway({
   cors: {
@@ -31,12 +35,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     private authService: AuthService,
     private userService: UserService,
     private roomService: RoomService,
-    private connectedUserService: ConnectedUserService
+    private connectedUserService: ConnectedUserService,
+    private joinedRoomService: JoinedRoomService,
+    private messageService: MessageService
   ) {}
 
-  async onModuleInit()
+  async onModuleInit(): Promise<void>
   {
       await this.connectedUserService.deleteAll();
+      await this.joinedRoomService.deleteAll();
   }
 
   async handleConnection(socket: Socket) {
@@ -68,7 +75,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     
   }
 
-  async handleDisconnect(socket: Socket)
+  async handleDisconnect(socket: Socket): Promise<void>
   {
     // remove connection from DB
     await this.connectedUserService.deleteBySocketId(socket.id);
@@ -90,6 +97,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     {
       const connections: ConnectedUser[] = await this.connectedUserService.findByUser(user);
       const rooms = await this.roomService.getRoomsForUser(user.id, {page: 1, limit: 10});
+      // substract page -1 to match the angular meterial paginator
+      rooms.meta.currentPage = rooms.meta.currentPage - 1;
       for(const connection of connections)
       {
         await this.server.to(connection.socketId).emit('rooms', rooms);
@@ -101,12 +110,51 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect, On
   @SubscribeMessage('paginateRoom')
   async onPaginateRoom(socket: Socket, page: PageProperties)
   {
-    page.limit = page.limit > 100 ? 100 : page.limit;
-    // add page +1 to match angular material paginator
-    page.page = page.page + 1;
-    const rooms = await this.roomService.getRoomsForUser(socket.data.user.id, page);
+    const pageRequest = await this.handlerIncomingPageRequest(page);
+    const rooms = await this.roomService.getRoomsForUser(socket.data.user.id, pageRequest);
     // substract page -1 to metch the angular material paginator
     rooms.meta.currentPage = rooms.meta.currentPage - 1;
     return this.server.to(socket.id).emit('rooms', rooms);
+  }
+
+  @SubscribeMessage('joinRoom')
+  async onJoinRoom(socket: Socket, room: Room)
+  {
+    const messages = await this.messageService.findByMessagesForRoom(room, {limit: 10, page: 1});
+    messages.meta.currentPage = messages.meta.currentPage - 1;
+
+    // Save Connection to Room
+    await this.joinedRoomService.create({socketId: socket.id, user: socket.data.user, room});
+    // Send last message from Room to User
+    await this.server.to(socket.id).emit('messages', messages)
+
+  }
+
+  @SubscribeMessage('leaveRoom')
+  async onLeaveRoom(socket: Socket)
+  {
+    // remove connection from JoinedRooms
+    await this.joinedRoomService.deleteBySocketId(socket.id);
+  }
+
+  @SubscribeMessage('addMessage')
+  async onAddMessage(socket: Socket, message: Message)
+  {
+    const createdMessage: Message = await this.messageService.create(
+      {
+        ...message, user: socket.data.user
+      }
+    );
+    const room: Room = await this.roomService.getRoom(createdMessage.room.id);
+    const joinedUsers: JoinedRoom[] = await this.joinedRoomService.findByRoom(room);
+    // TODO: Send new Message to all joined Users of the room (currently online)
+  }
+
+  private async handlerIncomingPageRequest(page: PageProperties): Promise<PageProperties>
+  {
+    page.limit = page.limit > 100 ? 100 : page.limit;
+    // add page +1 to match angular material paginator
+    page.page = page.page + 1;
+    return page;
   }
 }
