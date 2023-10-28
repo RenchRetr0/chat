@@ -21,13 +21,13 @@ export class MessageService
 
     async findByMessagesForRoom(room: Room, options: IPaginationOptions): Promise<Pagination<Message>>
     {
-        return await paginate(this.messageRepository, options, {
-            room: {id: room.id},
-            relations:
-            {
-                user: true,
-                room: true
-            }
-        })
+        const query = this.messageRepository
+        .createQueryBuilder()
+        .leftJoin('message.room', 'room')
+        .where('room.id = :roomId', {roomId: room.id})
+        .leftJoinAndSelect('message.user', 'user')
+        .orderBy('message.createdAt', 'ASC');
+
+        return paginate(query, options);
     }
 }
