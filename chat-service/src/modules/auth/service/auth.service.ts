@@ -7,6 +7,7 @@ import { SignInDto } from '@auth/dto/Signin.dto';
 import { UsersUnauthorized } from '@user/errors/user-unauthorizad.error';
 import { UsersNotFound } from '@user/errors/user-not-found.error';
 import { JwtPayloadDto } from '@auth/dto/JwtPayload.dto';
+import { EmailIsStatusService } from '@email-is-status/service/email-is-status.service';
 
 @Injectable()
 export class AuthService 
@@ -14,6 +15,7 @@ export class AuthService
     constructor(
         private jwtService: JwtService,
         private userService: UserService,
+        private emailIsStatusService: EmailIsStatusService
     ) {}
 
     async signin(signinDto: SignInDto): Promise<Tokens>
@@ -27,6 +29,20 @@ export class AuthService
         if (!isCorrectPassword) {
             throw new UsersUnauthorized();
         }
+
+        return await this.generateToken(user.id, user.login);
+    }
+
+    // authorization by email confirmation
+    async emailСonfirmation(strNumEmail: string): Promise<Tokens>
+    {
+        const email = await this.emailIsStatusService.decryptMail(strNumEmail);
+
+        const user = await this.userService.findOne({email: email}, {id: true, login: true});
+
+        if (!user) throw new UsersNotFound();
+
+        await this.emailIsStatusService.emailConfirmed(user.id);
 
         return await this.generateToken(user.id, user.login);
     }

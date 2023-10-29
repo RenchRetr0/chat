@@ -1,4 +1,5 @@
 import { MailerOptions } from "@nestjs-modules/mailer";
+import { createTransport } from "nodemailer";
 import { MailerAsyncOptions } from "@nestjs-modules/mailer/dist/interfaces/mailer-async-options.interface";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 
@@ -9,13 +10,14 @@ export const mailerAsyncConfig: MailerAsyncOptions = {
         configService: ConfigService,
     ) : Promise<MailerOptions> => {
         return {
-            transport: {
-                host: 'smtp.mail.ru',
+            transport:  {
+                service: 'gmail',
+                host: await configService.get<string>('APP_EMAIL_SMTP'),
                 port: 465,
                 secure: true,
                 auth: {
-                    user: configService.get<string>('APP_EMAIL_USER'),
-                    pass: configService.get<string>('APP_EMAIL_PASS'),
+                    user: await configService.get<string>('APP_EMAIL_USER'),
+                    pass: await configService.get<string>('APP_EMAIL_PASS'),
                 },
             },
         };

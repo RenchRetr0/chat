@@ -4,13 +4,15 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '@user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class EmailIsStatusService 
 {
     constructor (
         @InjectRepository(EmailIsStatus) private emailIsStatusRepository: Repository<EmailIsStatus>,
-        private readonly mailerService: MailerService
+        private readonly mailerService: MailerService,
+        private readonly configService: ConfigService
     ) {}
 
     async createEmailIsStatus(user: User): Promise<EmailIsStatus>
@@ -19,20 +21,55 @@ export class EmailIsStatusService
             user: user
         });
 
+        await this.sendConfirmationLink(user.email);
+
         return await this.emailIsStatusRepository.save(emailIsStatus);
     }
 
-    async mailer(email: string)
+    async decryptMail(strNumEmail: string): Promise<string>
     {
-        const emailSend = await this.mailerService.sendMail({
+        const arrHexEmail = strNumEmail.match(/.{1,2}/g);
+
+        const decodedEmail = arrHexEmail.map(hexChar => String.fromCharCode(parseInt(hexChar, 16))).join('');
+
+        return decodedEmail;
+    }
+
+    async emailConfirmed(userId: number)
+    {
+        const emailFalse = await this.emailIsStatusRepository.findOne({
+            where:
+            {
+                user:
+                {
+                    id: userId
+                }
+            }
+        });
+        emailFalse.isStatus = true;
+        await this.emailIsStatusRepository.save(emailFalse);
+    }
+
+    async sendConfirmationLink(email: string): Promise<void>
+    {
+        const encryptedMail = await this.encryptMail(email);
+
+        await this.mailerService.sendMail({
             to: email,
             from: 'retro.rench00@gmail.com',
-            subject: 'Тестовое письмо.',
-            text: 'Hello World!'
+            subject: 'Подтверждение почты',
+            html: `Для подтвержденяи почты преейдите по <a href="${this.configService.get<string>('APP_DOMAIN')}/${encryptedMail}"> ссылке </a>`
         });
 
-        console.log(emailSend);
+    }
 
-        return emailSend;
+    private async encryptMail(email: string): Promise<string>
+    {
+        const arrCharEmail = [...email];
+
+        const arrHexEmail = arrCharEmail.map(char => char.charCodeAt(0).toString(16));
+        const strNumEmail = arrHexEmail.join('');
+
+        return strNumEmail;
     }
 }
